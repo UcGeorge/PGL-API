@@ -2,7 +2,7 @@ from flask_restful import Resource, abort, marshal_with, fields, reqparse
 from model.user_model import user
 from model.user_novel_model import user_novel
 from model.novel_model import novel
-from app import db
+from app import db, helper
 
 getReadsFields = {
     'id': fields.Integer,
@@ -24,20 +24,14 @@ class Reads(Resource):
 
         sel = user_novel.select().where(user_novel.c.username == username)
 
-        user_novels = db.engine.execute(sel)
+        sql_res = db.engine.execute(sel)
 
-        d, a = {}, []
-        for rowproxy in user_novels:
-            # rowproxy.items() returns an array like [(key0, value0), (key1, value1)]
-            for column, value in rowproxy.items():
-                # build up the dictionary
-                d = {**d, **{column: value}}
-            a.append(d)
+        user_novels = helper.parse_ResultProxy(sql_res)
 
-        if a == []:
+        if user_novels == []:
             abort(404, message=f'User has no novels')
         else:
-            result = [novel.query.get(x['novel_id']) for x in a]
+            result = [novel.query.get(x['novel_id']) for x in user_novels]
 
         return result
 
@@ -51,18 +45,10 @@ class Reads(Resource):
                 409, message=f"{username if not the_user else args['novel_id']} doesn't exist")
 
         sel = user_novel.select().where(user_novel.c.username == username)
+        sql_res = db.engine.execute(sel)
+        user_novels = helper.parse_ResultProxy(sql_res)
 
-        user_novels = db.engine.execute(sel)
-
-        d, a = {}, []
-        for rowproxy in user_novels:
-            # rowproxy.items() returns an array like [(key0, value0), (key1, value1)]
-            for column, value in rowproxy.items():
-                # build up the dictionary
-                d = {**d, **{column: value}}
-            a.append(d)
-
-        if the_novel.id in [x['novel_id'] for x in a]:
+        if the_novel.id in [x['novel_id'] for x in user_novels]:
             abort(401, message=f"This novel is already part of the user's collection")
 
         ins = user_novel.insert().values(

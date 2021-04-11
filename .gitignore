@@ -2,3 +2,4 @@
 test.py
 *.pyc
 database.db
+test/run_test.bat

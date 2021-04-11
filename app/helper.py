@@ -8,3 +8,7 @@ def parse_ResultProxy(resultproxy):
             d = {**d, **{column: value}}
         a.append(d)
     return a
+
+
+def str_to_id(the_string: str) -> str:
+    return the_string.lower().replace(' ', '-')

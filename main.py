@@ -1,6 +1,6 @@
 from flask import Flask
 from app import db, api
-from api import user, hello, reads, novel
+from api import user, hello, reads, novel, chapter
 
 
 app = Flask("__main__")
@@ -16,6 +16,7 @@ api.add_resource(hello.Hello, '/hello')
 api.add_resource(user.User, '/user/<string:username>')
 api.add_resource(reads.Reads, '/reads/<string:username>')
 api.add_resource(novel.Novel, '/novels')
+api.add_resource(chapter.Chapter, '/chapter/<string:novel_name>')
 
 # Initialize this class with the given flask application
 api.init_app(app)

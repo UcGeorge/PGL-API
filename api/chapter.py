@@ -16,15 +16,26 @@ putChapterArgs.add_argument('name', type=str,
 putChapterArgs.add_argument('content', type=str,
                             help='Content of chapter is required', required=True)
 
+getChapterArgs = reqparse.RequestParser()
+getChapterArgs.add_argument('name', type=str)
+
 
 class Chapter(Resource):
 
     @marshal_with(mfields)
     def get(self, novel_name: str):
-        result = chapter.query.filter_by(
-            novel_name=helper.str_to_id(novel_name)).all()
-        if not result or result == []:
-            abort(404, message=f'No chapters for {novel_name}')
+        args = getChapterArgs.parse_args()
+        if args['name']:
+            result = chapter.query.filter_by(
+                name=args['name']).first()
+            if not result or result == []:
+                abort(
+                    404, message=f"{args['name']} not found for {novel_name}")
+        else:
+            result = chapter.query.filter_by(
+                novel_name=helper.str_to_id(novel_name)).all()
+            if not result or result == []:
+                abort(404, message=f'No chapters for {novel_name}')
         return result
 
     @marshal_with(mfields)
@@ -37,7 +48,7 @@ class Chapter(Resource):
             abort(409, message=f'{novel_name} does not exist')
 
         novel_chapters = [(int(chapter.index.replace(helper.str_to_id(novel_name) + '-', '')), chapter.name)
-                          for chapter in chapter.query.order_by(chapter.index).all()]
+                          for chapter in chapter.query.filter_by(novel_name=helper.str_to_id(novel_name)).order_by(chapter.index).all()]
 
         if args['name'] in (x[1] for x in novel_chapters):
             abort(401, message=f"{args['name']} already exists")

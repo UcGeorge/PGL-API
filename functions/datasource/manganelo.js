@@ -33,7 +33,8 @@ exports.search = async(searctTerm) => {
                 "imageType": "online",
                 "coverPicture": coverPicture,
                 "lastRead": "",
-                "lastChapterRead": ""
+                "lastChapterRead": "",
+                "source": sourceName,
             })
         }
         // End Main function body
@@ -60,7 +61,8 @@ exports.details = async(mangaLink) => {
         };
         dom.window.document.querySelectorAll(chapterItemSelector).forEach(_getChapters);
         result.description = dom.window.document.querySelector(descriptionSelector).textContent.replace('\nDescription :\n', "")
-        result.status = dom.window.document.querySelector(ratingSelector).textContent
+        result.status = dom.window.document.querySelector(statusSelector).textContent
+        result.rating = dom.window.document.querySelector(ratingSelector).textContent
 
         function _getChapters(value, index, array) {
             var chapter = {

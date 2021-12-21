@@ -28,3 +28,15 @@ exports.details = functions.https.onRequest(async(request, response) => {
         response.status(400).json({ "message": error.message });
     }
 });
+
+exports.getChapter = functions.https.onRequest(async(request, response) => {
+    var queryBody = request.body;
+    functions.logger.info("Get Chapter", { body: queryBody });
+    try {
+        var result = await datasources[queryBody.source].getChapter(queryBody.link);
+        response.status(200).send(result);
+    } catch (error) {
+        functions.logger.error(error.message);
+        response.status(400).json({ "message": error.message });
+    }
+});

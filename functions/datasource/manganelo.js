@@ -4,11 +4,12 @@ const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 
 const sourceName = "Manganelo";
-const searchLink = "https://manganato.com/search/story/"
-const chapterItemSelector = "body > div.body-site > div.container.container-main > div.container-main-left > div.panel-story-chapter-list > ul > li"
+const searchLink = "https://manganato.com/search/story/";
+const chapterItemSelector = "body > div.body-site > div.container.container-main > div.container-main-left > div.panel-story-chapter-list > ul > li";
 const descriptionSelector = "#panel-story-info-description";
-const statusSelector = "body > div.body-site > div.container.container-main > div.container-main-left > div.panel-story-info > div.story-info-right > table > tbody > tr:nth-child(3) > td.table-value"
-const ratingSelector = "#rate_row_cmd > em > em:nth-child(2) > em > em:nth-child(1)"
+const statusSelector = "body > div.body-site > div.container.container-main > div.container-main-left > div.panel-story-info > div.story-info-right > table > tbody > tr:nth-child(3) > td.table-value";
+const ratingSelector = "#rate_row_cmd > em > em:nth-child(2) > em > em:nth-child(1)";
+const chapterImageSelestor = "body > div.body-site > div.container-chapter-reader > img";
 
 exports.search = async(searctTerm) => {
     try {
@@ -80,7 +81,33 @@ exports.details = async(mangaLink) => {
         // End Main function body
         return result;
     } catch (e) {
-        functions.logger.error({ source: sourceName, function: "search", error: e.message });
+        functions.logger.error({ source: sourceName, function: "details", error: e.message });
+        throw e;
+    }
+}
+
+exports.getChapter = async(mangaLink) => {
+    try {
+        functions.logger.info({ source: sourceName, function: "get chapter", param: mangaLink });
+        // Main function body
+        const response = await fetch(mangaLink);
+        const text = await response.text();
+        const dom = new JSDOM(text);
+        var result = [];
+        dom.window.document.querySelectorAll(chapterImageSelestor).forEach(_getChapterImages);
+
+        function _getChapterImages(value, index, array) {
+            var chapter = {
+                "location": "",
+                "type": 'MANGA',
+            };
+            chapter.location = value.getAttribute('src');
+            result.push(chapter);
+        }
+        // End Main function body
+        return result;
+    } catch (e) {
+        functions.logger.error({ source: sourceName, function: "get chapters", error: e.message });
         throw e;
     }
 }
